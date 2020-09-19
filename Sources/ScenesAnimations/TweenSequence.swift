@@ -1,37 +1,19 @@
-/*
- Scenes provides a Swift object library with support for renderable entities,
- layers, and scenes.  Scenes runs on top of IGIS.
- Copyright (C) 2020 Tango Golf Digital, LLC
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-
-/// A 'TweenSequence' is used to seguence different 'Tween's.
-
+/// A `TweenSequence` is used to sequence different `Tween`s.
 public class TweenSequence : InternalTweenProtocol, TweenProtocol {
-    private var tweens = [InternalTweenProtocol]()
+    private var tweens : [InternalTweenProtocol] = []
 
-    /// The total amout of time taken, in seconds
+    /// The total amout of time taken, in seconds.
     public let duration : Double
 
-    public convenience init(delay:Double = 0, tweens:TweenProtocol...) {
-        self.init(delay:delay, tweens:tweens)
+    public convenience init(delay: Double = 0, tweens: TweenProtocol...) {
+        self.init(delay: delay, tweens: tweens)
     }
 
-    /// Creates a new 'TweenSequence' from the specified parameters
+    /// Creates a new `TweenSequence` from the specified parameters.
     /// - Parameters:
-    ///   - delay: the delay, in seconds, to add between each 'Tween'
-    ///   - tweens: the tweens to sequence, one at a time
-    public init(delay:Double = 0, tweens:[TweenProtocol]) {
+    ///   - delay: the delay, in seconds, to add between each `Tween`.
+    ///   - tweens: the tweens to sequence, one at a time.
+    public init(delay: Double = 0, tweens: [TweenProtocol]) {
         var duration = 0.0
         
         for (index, tween) in tweens.enumerated() {
@@ -43,7 +25,7 @@ public class TweenSequence : InternalTweenProtocol, TweenProtocol {
                 self.tweens.append(tween)
                 duration += tween.duration
             } else {
-                self.tweens.append(DelayTween(duration:delay))
+                self.tweens.append(DelayTween(duration: delay))
                 self.tweens.append(tween)
                 duration += (delay + tween.duration)
             }
@@ -52,7 +34,7 @@ public class TweenSequence : InternalTweenProtocol, TweenProtocol {
         self.duration = duration
     }
 
-    internal init(tweens:[InternalTweenProtocol]) {
+    internal init(tweens: [InternalTweenProtocol]) {
         var duration = 0.0
         
         for tween in tweens {
@@ -63,25 +45,21 @@ public class TweenSequence : InternalTweenProtocol, TweenProtocol {
         self.duration = duration
     }
 
+    @available(swift, obsoleted: 5.2.4, message: "No longer available")
     internal var inverse : InternalTweenProtocol {
-        var invertedTweens = [InternalTweenProtocol]()
-        for tween in tweens {
-            invertedTweens.append(tween.inverse)
-        }
-        invertedTweens.reverse()
-        return TweenSequence(tweens:invertedTweens)
+        return self
     }
 
-    internal func update(percent:Double) {
-        let timeElapsed = duration * percent
+    internal func update(progress: Double) {
+        let timeElapsed = duration * progress
         var timeToCurrentTween = 0.0
-        if let tween = findCurrentTween(timeElapsed:timeElapsed, timeToCurrentTween:&timeToCurrentTween) {
+        if let tween = findCurrentTween(timeElapsed: timeElapsed, timeToCurrentTween: &timeToCurrentTween) {
             let tweenTimeElapsed = timeElapsed - timeToCurrentTween
-            tween.update(percent:tweenTimeElapsed/tween.duration)
+            tween.update(progress: tweenTimeElapsed/tween.duration)
         }
     }
 
-    private func findCurrentTween(timeElapsed:Double, timeToCurrentTween:inout Double) -> InternalTweenProtocol? {
+    private func findCurrentTween(timeElapsed: Double, timeToCurrentTween: inout Double) -> InternalTweenProtocol? {
         for tween in tweens {
             if timeToCurrentTween + tween.duration < timeElapsed {
                 timeToCurrentTween += tween.duration

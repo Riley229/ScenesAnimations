@@ -1,109 +1,90 @@
-/*
- Scenes provides a Swift object library with support for renderable entities,
- layers, and scenes.  Scenes runs on top of IGIS.
- Copyright (C) 2020 Tango Golf Digital, LLC
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+import Foundation
 
-/// The 'AnimationManager' handles the queuing and updating of 'Animation's.
+/// Handles the queuing and updating of registered `Animation`s.
 public class AnimationManager {
-    private var animations = [Animation]()
-    private var animationsPendingRemoval = [Animation]()
+    private var runningAnimations : [Animation] = []
+    private var animationsPendingRemoval : [Animation] = []
+    private var currentTime = Date()
     
-    // called anytime we need to remove an animation from manager
-    internal func remove(animation:Animation) {
+    internal func remove(animation: Animation) {
         animation.restart()
-        guard let index = animations.firstIndex(of:animation) else {
-            fatalError("Animation queued for removal does not exist.")
+        guard let index = runningAnimations.firstIndex(of: animation) else {
+            assert(false, "Animation marked for removal is not registered to AnimationManager.")
         }
-        animations.remove(at:index)
+        runningAnimations.remove(at: index)
     }
 
-    // updates animations every frame
     internal func updateFrame() {
-        // remove all completed animations
-        animationsPendingRemoval.forEach {
-            remove(animation:$0)
+        // remove all completed animations.
+        for _ in 0..<animationsPendingRemoval.count {
+            remove(animation: animationsPendingRemoval.removeFirst())
         }
-        animationsPendingRemoval.removeAll()
+
+        // calculate time since last frame update.
+        let newTime = Date()
+        let frameTime = newTime.timeIntervalSince(currentTime)
+        currentTime = newTime
         
-        // if an animation is completed, append it to removal list, otherwise update it
-        animations.forEach {
-            $0.updateFrame(frameRate:1/30)
-            if $0.isCompleted {
-                animationsPendingRemoval.append($0)
+        // if an animation is completed, append it to removal list, otherwise update it.
+        for animation in runningAnimations {
+            animation.updateFrame(frameRate: frameTime)
+            
+            if animation.isCompleted {
+                animationsPendingRemoval.append(animation)
             }
         }
     }
 
-    // ********************************************************************************
-    // API FOLLOWS
-    // ********************************************************************************
-
-    /// Allows for you to retrieve an altered percent represented by an 'EasingStyle'
-    /// - Parameters:
-    ///   - ease: The 'EasingStyle' to retrieve an altered percent from
-    ///   - percent: The percent to apply to the ease
-    /// - Returns: A new percent as altered by the ease
-    public func getValue(ease:EasingStyle, percent:Double) -> Double {
-        return ease.apply(percent:percent)
+    @available(*, deprecated, message: "Use `apply` method within `EasingStyle` instead.")
+    public func getValue(ease: EasingStyle, percent: Double) -> Double {
+        return ease.apply(percent: percent)
     }
 
-    /// Adds a new 'Animation' to the 'AnimationManager' for updating
+    /// Adds a new `Animation` to running animations.
     /// - Parameters:
-    ///   - animation: The 'Animation' to add
-    ///   - autoPlay: Whether or not to automatically begin playing the animation upon registering it
-    public func run(animation:Animation, autoPlay:Bool = true) {
+    ///   - animation: The `Animation` to run.
+    ///   - autoPlay: Whether to automatically begin playing the animation upon registering or not.
+    public func run(animation: Animation, autoPlay: Bool = true) {
         if animation.isCompleted {
             animation.state = .notQueued
         } else {
-            // make sure animation isn't already running
-            for runningAnimation in animations {
-                if runningAnimation == animation {
-                    return
-                }
+            // make sure animation isn't already registered.
+            guard !runningAnimations.contains(animation) else {
+                assert(false, "Cannot run an Animation already registered to AnimationManager.")
             }
         }
-        animations.append(animation)
+        runningAnimations.append(animation)
+        
         if autoPlay {
             animation.play()
         }
     }
 
-    /// Calls the terminate() function on all registered 'Animation's
+    /// Invokes terminate() on all running `Animation`s.
     public func terminateAll() {
-        animations.forEach {
-            $0.terminate()
+        for animation in runningAnimations {
+            animation.terminate()
         }
     }
 
-    /// Calls the pause() function on all registered 'Animation's
+    /// Invokes pause() on all running `Animation`s.
     public func pauseAll() {
-        animations.forEach {
-            $0.pause()
+        for animation in runningAnimations {
+            animation.pause()
         }
     }
 
-    /// Calls the play() function on all registered 'Animation's
+    /// Invokes play() on all running `Animation`s.
     public func playAll() {
-        animations.forEach {
-            $0.play()
+        for animation in runningAnimations {
+            animation.play()
         }
     }
 
-    /// Calls the restart() function on all registered 'Animation's
+    /// Invokes restart() on all running `Animation`s.
     public func restartAll() {
-        animations.forEach {
-            $0.restart()
+        for animation in runningAnimations {
+            animation.restart()
         }
     }
 }
