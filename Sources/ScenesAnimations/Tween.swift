@@ -8,7 +8,7 @@
 /// }
 /// ~~~
 
-public class Tween<TweenElement: Tweenable> : InternalTweenProtocol, TweenProtocol {
+public class Tween<TweenElement: Interpolatable> : InternalTweenProtocol, TweenProtocol {
     private let startValue : TweenElement
     private let endValue : TweenElement
 
@@ -17,7 +17,7 @@ public class Tween<TweenElement: Tweenable> : InternalTweenProtocol, TweenProtoc
     /// The `EasingStyle` applied.
     public let ease : EasingStyle
 
-    public typealias UpdateHandler<TweenElement: Tweenable> = (TweenElement) -> ()
+    public typealias UpdateHandler<TweenElement: Interpolatable> = (TweenElement) -> ()
     var updateHandler : UpdateHandler<TweenElement>
 
     /// Creates a new `Tween` from the specified parameters.
@@ -59,7 +59,7 @@ public class Tween<TweenElement: Tweenable> : InternalTweenProtocol, TweenProtoc
     
     internal func update(progress: Double) {
         let easePercent = ease.apply(percent: progress)
-        let newValue = startValue.lerp(to: endValue, percent: easePercent)
+        let newValue = startValue.lerp(to: endValue, interpolant: easePercent)
         updateHandler(newValue)
     }
 }
