@@ -5,6 +5,9 @@ public class AnimationManager {
     private var runningAnimations : [Animation] = []
     private var animationsPendingRemoval : [Animation] = []
     private var currentTime = Date()
+
+    public init() {
+    }
     
     internal func remove(animation: Animation) {
         animation.restart()
@@ -14,7 +17,7 @@ public class AnimationManager {
         runningAnimations.remove(at: index)
     }
 
-    internal func updateFrame() {
+    public func update() {
         // remove all completed animations.
         for _ in 0..<animationsPendingRemoval.count {
             remove(animation: animationsPendingRemoval.removeFirst())
@@ -37,7 +40,7 @@ public class AnimationManager {
 
     @available(*, deprecated, message: "Use `apply` method within `EasingStyle` instead.")
     public func getValue(ease: EasingStyle, percent: Double) -> Double {
-        return ease.apply(percent: percent)
+        return ease.apply(progress: percent)
     }
 
     /// Adds a new `Animation` to running animations.

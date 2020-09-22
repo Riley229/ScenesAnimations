@@ -55,3 +55,14 @@ extension Interpolatable {
         return sqrt(intervalSquared)
     }
 }
+
+// ******** MARK: deprecated properties. ********
+@available(swift, obsoleted: 5.2, renamed: "Interpolatable")
+public protocol Tweenable {}
+
+extension Interpolatable {
+    @available(*, deprecated, message: "`percent` parameter renamed to `interpolant`.")
+    public func lerp(to target: Self, percent: Double) -> Self {
+        return self.lerp(to: target, interpolant: percent)
+    }
+}

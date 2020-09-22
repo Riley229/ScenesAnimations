@@ -2,15 +2,14 @@
 public class Animation : Equatable {
     enum State {
         case notQueued
-        case queued
+        case pending
         case playing
-        case playingInReverse
         case paused
-        case pausedInReverse
         case completed
         case cancelled
     }
     internal var state = State.notQueued
+    internal var isReversed = false
 
     private let tween : InternalTweenProtocol
     private var elapsedTime = 0.0
@@ -20,6 +19,8 @@ public class Animation : Equatable {
     /// Specifies whether or not to reverse the animation after the animation is completete.
     public var reverse = false
 
+    public var duration : Double
+
     /// Creates a new 'Animation' from the specified 'Tween'
     /// - Parameters:
     ///   - tween: The 'Tween'
@@ -28,46 +29,41 @@ public class Animation : Equatable {
             fatalError("tween doesn't conform to InternalTweenProtocol.")
         }
         self.tween = tween
+        self.duration = tween.duration
     }
 
     internal init(tween: InternalTweenProtocol) {
         self.tween = tween
+        self.duration = tween.duration
     }
 
     internal func updateFrame(frameRate: Double) {
         // if animation has been queued, begin playing
-        if state == .queued {
+        if state == .pending {
             state = .playing
         }
         
         if state == .playing {
-            let percent = elapsedTime / tween.duration
+            let percent = elapsedTime / duration
             tween.update(progress: percent)
-            
-            if percent >= 1 {
+
+            if isReversed && percent <= 0 {
+                if loop {
+                    restart()
+                } else {
+                    state = .completed
+                }
+            } else if !isReversed && percent >= 1 {
                 if reverse {
-                    state = .playingInReverse
+                    isReversed = true
                 } else if loop {
                     restart()
                 } else {
                     state = .completed
                 }
             }
-            
-            elapsedTime += frameRate
-        } else if state == .playingInReverse {
-            let percent = elapsedTime / tween.duration
-            tween.update(progress: percent)
-            
-            if percent <= 0 {
-                if loop {
-                    restart()
-                } else {
-                    state = .completed
-                }
-            }
-            
-            elapsedTime -= frameRate
+
+            elapsedTime += isReversed ? -frameRate : frameRate
         }
     }
 
@@ -80,12 +76,12 @@ public class Animation : Equatable {
 
     /// returns true if the animation is currently paused
     public var isPaused : Bool {
-        return state == .paused || state == .pausedInReverse
+        return state == .paused
     }
 
     /// returns true if the animation is currently playing
     public var isPlaying : Bool {
-        return state == .playing || state == .playingInReverse || state == .queued
+        return state == .playing || state == .pending
     }
 
     /// returns true if the animation isPlaying, isPaused, or isCompleted.
@@ -108,11 +104,7 @@ public class Animation : Equatable {
     /// Pauses the animation
     public func pause() {
         if isPlaying {
-            if state == .playingInReverse {
-                state = .pausedInReverse
-            } else {
-                state = .paused
-            }
+            state = .paused
         }
     }
 
@@ -122,13 +114,9 @@ public class Animation : Equatable {
     public func play() {
         if !isCompleted && !isPlaying {
             if isQueued {
-                if state == .pausedInReverse {
-                    state = .playingInReverse
-                } else {
-                    state = .playing
-                }
+                state = .playing
             } else {
-                state = .queued
+                state = .pending
             }
         }
     }

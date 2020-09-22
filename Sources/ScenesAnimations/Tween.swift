@@ -58,7 +58,7 @@ public class Tween<TweenElement: Interpolatable> : InternalTweenProtocol, TweenP
     }
     
     internal func update(progress: Double) {
-        let easePercent = ease.apply(percent: progress)
+        let easePercent = ease.apply(progress: progress)
         let newValue = startValue.lerp(to: endValue, interpolant: easePercent)
         updateHandler(newValue)
     }
