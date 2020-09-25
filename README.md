@@ -4,11 +4,14 @@
 - [ ] Redesign `Tweenable` for uniformity and accuracy.
   - [x] Redo `Tweenable` protocol.
   - [ ] Complete conformance for new protocol.
-- [ ] Improve `EasingStyle` and add more styles.
-  - [ ] Internal calculation changes.
-  - [ ] Implement new easing styles.
+- [x] Improve `EasingStyle` and add more styles.
+  - [x] Internal calculation changes.
+  - [x] Implement new easing styles.
 - [ ] Improve animation state system.
-- [ ] Add delay to `Animation` (and remove delay tween).
+- [ ] Move all timing functionality to Animation class.
+  - [ ] Add delay to `Animation` (and remove delay tween).
+  - [ ] Add more playback styles (forwards, reverse, alternate, alternateReverse)
+  - [ ] Add beter repeat system (based on count, infinitely, or none)
 
 ## Changelog
 
@@ -25,7 +28,7 @@
 - `none` is now available as an alternative to `linear`.
 - all configurable pow eases have been renamed to allow for uniformity in naming conventions.
 - all exponential eases have been renamed to allow for uniformity in naming conventions.
-- added new `steps`, `custom`, and `cubicBezier` easing styles.
+- added new `steps`, `custom`, and `bezier` easing styles.
 
 #### Interpolatable (Tweenable)
 - Tweenable has been renamed `Interpolatable` for conciseness.

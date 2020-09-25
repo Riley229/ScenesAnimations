@@ -21,7 +21,7 @@ public enum EasingStyle {
     /// - Parameters:
     ///   - controlPoint1: The first controlPoint, or abscissus.  Values should be between 0 and 1.
     ///   - controlPoint2: The second controlPoint, or abscissus.  Values should be between 0 and 1.
-    case cubicBezier(controlPoint1: DoublePoint, controlPoint2: DoublePoint)
+    case bezier(controlPoint1: DoublePoint, controlPoint2: DoublePoint)
 
     /// Configurable exponential ease with in direction.
     /// - Parameter exponent: The exponent to use (ex: 2 would return a quadratic ease).
@@ -98,7 +98,7 @@ public enum EasingStyle {
         case .custom(let interpolant):
             return interpolant(progress)
 
-        case .cubicBezier(let controlPoint1, let controlPoint2):
+        case .bezier(let controlPoint1, let controlPoint2):
             let bezier = UnitBezier(controlPoint1: controlPoint1, controlPoint2: controlPoint2)
             return bezier.solve(for: progress)
 
@@ -179,7 +179,7 @@ public enum EasingStyle {
         }
     }
 
-    // ******** MARK: obsoleted properties. ********
+    // ******** MARK: deprecated properties. ********
     @available(*, deprecated, renamed: "inPow")
     public static func configureInPow(exponent: Double) -> EasingStyle {
         return EasingStyle.inPow(exponent: exponent)
@@ -201,9 +201,4 @@ public enum EasingStyle {
     public static let outExponential = EasingStyle.outExpo
     @available(*, deprecated, renamed: "inOutExpo")
     public static let inOutExponential = EasingStyle.inOutExpo
-
-    @available(swift, obsoleted: 5.2, message: "`inverse` is no longer available as an attribute of `EasingStyle`.")
-    public var inverse : EasingStyle {
-        return .linear
-    }
 }

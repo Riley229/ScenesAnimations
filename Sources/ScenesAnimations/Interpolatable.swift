@@ -38,7 +38,7 @@ extension Interpolatable {
         for (index, vector) in vectors.enumerated() {
             // calculate vector and target vector seperately to maintain better floating point accuracy
             // at 0 and 1 interpolant values.
-            let interpolatedValue = (1 - interpolant) * vector + targetVectors[index] * interpolant
+            let interpolatedValue = (1 - interpolant) * vector + interpolant * targetVectors[index]
             output.append(interpolatedValue)
         }
 
@@ -53,16 +53,5 @@ extension Interpolatable {
           .map { vector in pow(vector, 2) }
           .reduce(0, +)
         return sqrt(intervalSquared)
-    }
-}
-
-// ******** MARK: deprecated properties. ********
-@available(swift, obsoleted: 5.2, renamed: "Interpolatable")
-public protocol Tweenable {}
-
-extension Interpolatable {
-    @available(*, deprecated, message: "`percent` parameter renamed to `interpolant`.")
-    public func lerp(to target: Self, percent: Double) -> Self {
-        return self.lerp(to: target, interpolant: percent)
     }
 }

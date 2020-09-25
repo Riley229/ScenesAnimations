@@ -10,10 +10,10 @@ public class AnimationManager {
     }
     
     internal func remove(animation: Animation) {
-        animation.restart()
         guard let index = runningAnimations.firstIndex(of: animation) else {
             assert(false, "Animation marked for removal is not registered to AnimationManager.")
         }
+        
         runningAnimations.remove(at: index)
     }
 
@@ -22,7 +22,7 @@ public class AnimationManager {
         for _ in 0..<animationsPendingRemoval.count {
             remove(animation: animationsPendingRemoval.removeFirst())
         }
-
+        
         // calculate time since last frame update.
         let newTime = Date()
         let frameTime = newTime.timeIntervalSince(currentTime)
@@ -30,9 +30,9 @@ public class AnimationManager {
         
         // if an animation is completed, append it to removal list, otherwise update it.
         for animation in runningAnimations {
-            animation.updateFrame(frameRate: frameTime)
-            
-            if animation.isCompleted {
+            animation.update(frameTime: frameTime)
+          
+            if animation.state == .completed {
                 animationsPendingRemoval.append(animation)
             }
         }
@@ -48,8 +48,8 @@ public class AnimationManager {
     ///   - animation: The `Animation` to run.
     ///   - autoPlay: Whether to automatically begin playing the animation upon registering or not.
     public func run(animation: Animation, autoPlay: Bool = true) {
-        if animation.isCompleted {
-            animation.state = .notQueued
+        if animation.state == .completed {
+            animation.state = .idle
         } else {
             // make sure animation isn't already registered.
             guard !runningAnimations.contains(animation) else {
@@ -63,31 +63,32 @@ public class AnimationManager {
         }
     }
 
-    /// Invokes terminate() on all running `Animation`s.
-    public func terminateAll() {
-        for animation in runningAnimations {
-            animation.terminate()
-        }
-    }
+    // /// Invokes terminate() on all running `Animation`s.
+    // public func terminateAll() {
+    //     for animation in runningAnimations {
+    //         animation.terminate()
+    //     }
+    // }
 
-    /// Invokes pause() on all running `Animation`s.
-    public func pauseAll() {
-        for animation in runningAnimations {
-            animation.pause()
-        }
-    }
+    // /// Invokes pause() on all running `Animation`s.
+//     public func pauseAll() {
+//         for animation in runningAnimations {
+//             animation.pause()
+//         }
+//     }
 
-    /// Invokes play() on all running `Animation`s.
-    public func playAll() {
-        for animation in runningAnimations {
-            animation.play()
-        }
-    }
+//     /// Invokes play() on all running `Animation`s.
+//     public func playAll() {
+//         for animation in runningAnimations {
+//             animation.play()
+//         }
+//     }
 
-    /// Invokes restart() on all running `Animation`s.
-    public func restartAll() {
-        for animation in runningAnimations {
-            animation.restart()
-        }
-    }
+//     /// Invokes restart() on all running `Animation`s.
+//     public func restartAll() {
+//         for animation in runningAnimations {
+//             animation.restart()
+//         }
+//     }
+// }
 }
