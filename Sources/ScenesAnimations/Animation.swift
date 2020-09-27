@@ -4,6 +4,7 @@ public class Animation : Equatable {
     
     internal var state : AnimationState = .idle
     internal var time : Double = 0
+    internal var controller : AnimationController?
 
     /// A unique identifying number for the animation.
     public let animationId : Int
@@ -23,6 +24,7 @@ public class Animation : Equatable {
     public var direction : Direction = .normal
     /// The repeat style for the animation.
     public var repeatStyle : RepeatStyle = .none
+    public var easingStyle : EasingStyle = .none
     /// Describes whether or not animation is currently in reverse.
     public private(set) var isReversed : Bool = false
     /// The current number of completed animation cycles.
@@ -41,14 +43,18 @@ public class Animation : Equatable {
         Animation.nextAnimationId += 1
     }
 
-    internal func update(frameTime: Double) {
+    internal func registerAnimationController(_ controller: AnimationController) {
+        self.controller = controller
+    }
+
+    internal func update(deltaTime: Double) {
         guard !isPaused() else {
             return
         }
 
         if state == .pending {
-            time = max(0, min(delay, time + frameTime))
-            elapsedTime += frameTime
+            time = max(0, min(delay, time + deltaTime))
+            elapsedTime += deltaTime
 
             if time >= delay {
                 state = .playing
@@ -59,9 +65,9 @@ public class Animation : Equatable {
                 }
             }
         } else if state == .playing {
-            time += isReversed ? -frameTime : frameTime
+            time += isReversed ? -deltaTime : deltaTime
             time = max(0, min(duration, time))
-            elapsedTime += frameTime
+            elapsedTime += deltaTime
 
             if !isReversed && time >= duration || isReversed && time <= 0 {
                 if repeatStyle.shouldRepeat(for: cycle) {
@@ -81,7 +87,7 @@ public class Animation : Equatable {
                 state = .completed
             }
             
-            tween.update(progress: time / duration)
+            tween.update(progress: easingStyle.apply(progress: time / duration))
         }
     }
 
@@ -92,110 +98,21 @@ public class Animation : Equatable {
     }
 
     public func play() {
+        guard let controller = controller else {
+            return
+        }
+        
         self.state = .pending
         if [.reverse, .alternateReverse].contains(direction) {
             isReversed = true
         } else {
             isReversed = false
         }
+        controller.run(animation: self)
     }
 
     /// Equivalence operator for two `Animation`s.
     public static func == (left: Animation, right: Animation) -> Bool {
         return left.animationId == right.animationId
     }
-
-    // UNTOUCHED (YET)
-    // private let tween : InternalTweenProtocol
-    // private var elapsedTime = 0.0
-
-    // internal func updateFrame(frameRate: Double) {
-    //     // if animation has been queued, begin playing
-    //     if state == .pending {
-    //         state = .playing
-    //     }
-        
-    //     if state == .playing {
-    //         let percent = elapsedTime / duration
-    //         tween.update(progress: percent)
-
-    //         if isReversed && percent <= 0 {
-    //             if loop {
-    //                 restart()
-    //             } else {
-    //                 state = .completed
-    //             }
-    //         } else if !isReversed && percent >= 1 {
-    //             if reverse {
-    //                 isReversed = true
-    //             } else if loop {
-    //                 restart()
-    //             } else {
-    //                 state = .completed
-    //             }
-    //         }
-
-    //         elapsedTime += isReversed ? -frameRate : frameRate
-    //     }
-    // }
-
-    // /// returns true if the animation was completed or cancelled
-    // ///
-    // /// NB: will only return true for one frame when animation is completed
-    // public var isCompleted : Bool {
-    //     return state == .completed || state == .cancelled
-    // }
-
-    // /// returns true if the animation is currently paused
-    // public var isPaused : Bool {
-    //     return state == .paused
-    // }
-
-    // /// returns true if the animation is currently playing
-    // public var isPlaying : Bool {
-    //     return state == .playing || state == .pending
-    // }
-
-    // /// returns true if the animation isPlaying, isPaused, or isCompleted.
-    // public var isQueued : Bool {
-    //     return state != .idle
-    // }
-
-    
-    // /// Stops the animation and removes it from the 'AnimationManager'
-    // public func terminate() {
-    //     if isQueued {
-    //         state = .cancelled
-    //     }
-    // }
-
-    // /// Pauses the animation
-    // public func pause() {
-    //     if isPlaying {
-    //         state = .paused
-    //     }
-    // }
-
-    // /// Plays the animation
-    // ///
-    // /// NB: Only plays if already added to 'AnimationManager'
-    // public func play() {
-    //     if !isCompleted && !isPlaying {
-    //         if isQueued {
-    //             state = .playing
-    //         } else {
-    //             state = .pending
-    //         }
-    //     }
-    // }
-
-    // /// Restarts the animation to the initial value as specified in the 'Tween'.
-    // public func restart() {
-    //     if isPlaying {
-    //         state = .playing
-    //     } else {
-    //         state = .idle
-    //     }
-    //     self.elapsedTime = 0
-    // }
 }
