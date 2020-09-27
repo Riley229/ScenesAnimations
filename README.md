@@ -1,17 +1,8 @@
 # ScenesAnimations
 
 ## To Do
-- [ ] Redesign `Tweenable` for uniformity and accuracy.
-  - [x] Redo `Tweenable` protocol.
-  - [ ] Complete conformance for new protocol.
-- [x] Improve `EasingStyle` and add more styles.
-  - [x] Internal calculation changes.
-  - [x] Implement new easing styles.
-- [ ] Improve animation state system.
-- [ ] Move all timing functionality to Animation class.
-  - [ ] Add delay to `Animation` (and remove delay tween).
-  - [ ] Add more playback styles (forwards, reverse, alternate, alternateReverse)
-  - [ ] Add beter repeat system (based on count, infinitely, or none)
+- Make Color Interpolatable
+- Add repeatDelay to animation
 
 ## Changelog
 

@@ -8,10 +8,9 @@ public class Animation : Equatable {
 
     /// A unique identifying number for the animation.
     public let animationId : Int
-    let tween : InternalTweenProtocol
 
     /// The time, in seconds, the animation will take to complete one cycle.
-    public var duration : Double = 1 {
+    public private(set) var duration : Double {
         didSet {
             if duration <= 0 {
                 duration = 0.001
@@ -19,12 +18,12 @@ public class Animation : Equatable {
         }
     }
     /// The amount of time, in seconds, to delay the animation from the time it begins and the beginning of the animation sequence.
-    public var delay : Double = 0
+    public private(set) var delay : Double
     /// The playback direction of the animation.
     public var direction : Direction = .normal
     /// The repeat style for the animation.
     public var repeatStyle : RepeatStyle = .none
-    public var easingStyle : EasingStyle = .none
+    public private(set) var ease : EasingStyle
     /// Describes whether or not animation is currently in reverse.
     public private(set) var isReversed : Bool = false
     /// The current number of completed animation cycles.
@@ -33,14 +32,13 @@ public class Animation : Equatable {
     /// The current elapsed time for the animation.
     public private(set) var elapsedTime : Double = 0
 
-    public init(tween: TweenProtocol) {
-        guard let tween = tween as? InternalTweenProtocol else {
-            fatalError("")
-        }
-        self.tween = tween
-        
+    internal init(delay: Double, duration: Double, ease: EasingStyle) { 
         self.animationId = Animation.nextAnimationId
         Animation.nextAnimationId += 1
+
+        self.delay = delay
+        self.duration = duration
+        self.ease = ease
     }
 
     internal func registerAnimationController(_ controller: AnimationController) {
@@ -86,8 +84,6 @@ public class Animation : Equatable {
             } else if state == .idle && time >= duration {
                 state = .completed
             }
-            
-            tween.update(progress: easingStyle.apply(progress: time / duration))
         }
     }
 

@@ -1,4 +1,4 @@
-public class Tween<TweenElement: Interpolatable> : InternalTweenProtocol, TweenProtocol {
+public class Tween<TweenElement: Interpolatable> : Animation {
     private let startValue : TweenElement
     private let endValue : TweenElement
 
@@ -10,29 +10,31 @@ public class Tween<TweenElement: Interpolatable> : InternalTweenProtocol, TweenP
     ///   - from: The starting value.
     ///   - to: The ending value.
     ///   - update: The value to update.
-    public init(from: TweenElement, to: TweenElement, update: @escaping UpdateHandler<TweenElement>) {
+    public init(from: TweenElement, to: TweenElement, delay: Double = 0, duration: Double = 1,
+                ease: EasingStyle = .none, update: @escaping UpdateHandler<TweenElement>) {
         self.startValue = from
         self.endValue = to
         self.updateHandler = update
+        super.init(delay: delay, duration: duration, ease: ease)
     }
 
-    // public convenience init(from: TweenElement, to: TweenElement, speed: Double, ease: EasingStyle = .linear, update: @escaping UpdateHandler<TweenElement>) {
-    //     var interval = from.interval(to:to)
-    //     if interval < 0 {
-    //         assert(false, "Distance returned from interval() in \(type(of: from)) must be positive.")
-    //         interval = -interval
-    //     }
+    public convenience init(from: TweenElement, to: TweenElement, delay: Double = 0, speed: Double,
+                            ease: EasingStyle = .none, update: @escaping UpdateHandler<TweenElement>) {
+        var interval = from.interval(to: to)
+        if interval < 0 {
+            assert(false, "Distance returned from distance() in \(type(of: from)) must be positive.")
+            interval = -interval
+        }
 
-    //     self.init(from: from, to: to, duration: interval / speed, ease: ease, update: update)
-    // }
-
-    @available(swift, obsoleted: 5.2.4, message: "No longer available.")
-    internal var inverse : InternalTweenProtocol {
-        return self
+        self.init(from: from, to: to, delay: delay, duration: interval / speed, ease: ease, update: update)
     }
-    
-    internal func update(progress: Double) {
-        let newValue = startValue.lerp(to: endValue, interpolant: progress)
-        updateHandler(newValue)
+
+    override func update(deltaTime: Double) {
+        super.update(deltaTime: deltaTime)
+
+        if state == .playing {
+            let newValue = startValue.lerp(to: endValue, interpolant: ease.apply(progress: time / duration))
+            updateHandler(newValue)
+        }
     }
 }
