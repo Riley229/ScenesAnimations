@@ -41,8 +41,8 @@ public class Animation : Equatable {
         self.ease = ease
     }
 
-    internal func registerAnimationController(_ controller: AnimationController) {
-        self.controller = controller
+    internal func registerToAnimationController(animationController: AnimationController) {
+        self.controller = animationController
     }
 
     internal func update(deltaTime: Double) {
@@ -105,6 +105,15 @@ public class Animation : Equatable {
             isReversed = false
         }
         controller.run(animation: self)
+    }
+
+    public func pause() {
+    }
+
+    public func restart() {
+    }
+
+    public func terminate() {
     }
 
     /// Equivalence operator for two `Animation`s.

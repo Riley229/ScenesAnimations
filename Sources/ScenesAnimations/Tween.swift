@@ -33,7 +33,7 @@ public class Tween<TweenElement: Interpolatable> : Animation {
         super.update(deltaTime: deltaTime)
 
         if state == .playing {
-            let newValue = startValue.lerp(to: endValue, interpolant: ease.apply(progress: time / duration))
+            let newValue = startValue.lerp(to: endValue, progress: ease.apply(progress: time / duration))
             updateHandler(newValue)
         }
     }

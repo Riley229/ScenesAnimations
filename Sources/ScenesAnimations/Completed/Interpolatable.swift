@@ -1,5 +1,22 @@
-import Foundation
+/*
+ ScenesAnimations provides support for creating and running animations.
+ ScenesAnimations runs on top of Scenes and IGIS.
+ Copyright (C) 2020 Camden Thomson
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // Reference: https://en.wikipedia.org/wiki/Linear_interpolation
+
+import Foundation
 
 /// A type capable of being linearly interpolated between two values.
 ///
@@ -28,17 +45,17 @@ extension Interpolatable {
     /// Linearly interpolates this instance towards a target instance.
     /// - Parameters:
     ///   - target: The target instance.
-    ///   - interpolant: The interpolant, or multiplier, to use (value between 0 and 1).
+    ///   - progress: The progress, or interpolant value, to use (between 0 and 1).
     /// - Returns: A new instance interpolated from this instance towards the target instance.
-    public func lerp(to target: Self, interpolant: Double) -> Self {
+    public func lerp(to target: Self, progress: Double) -> Self {
         let vectors = vectorize()
         let targetVectors = target.vectorize()
         var output : [Double] = []
 
         for (index, vector) in vectors.enumerated() {
             // calculate vector and target vector seperately to maintain better floating point accuracy
-            // at 0 and 1 interpolant values.
-            let interpolatedValue = (1 - interpolant) * vector + interpolant * targetVectors[index]
+            // at 0 and 1 progress values.
+            let interpolatedValue = (1 - progress) * vector + progress * targetVectors[index]
             output.append(interpolatedValue)
         }
 

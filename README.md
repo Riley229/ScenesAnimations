@@ -1,8 +1,15 @@
 # ScenesAnimations
 
-## To Do
-- Make Color Interpolatable
-- Add repeatDelay to animation
+ScenesAnimations is a library built on top of Igis and Scenes which adds support for creating and running animations.
+
+## To Do List
+- Add Interpolatable support for characters and strings.
+- Make Color HSB Interpolatable.
+- Add repeatDelay to Animation.
+- Add support for animating along a path.
+- Add simplified declarative syntax for animating properties.
+- Add support for fractional repeatStyle counts and function checkers.
+- Add Animation Timelines
 
 ## Changelog
 
