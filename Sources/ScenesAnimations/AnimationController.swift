@@ -50,7 +50,6 @@ public class AnimationController : EventHandler, FrameUpdateHandler {
     internal func run(animation: Animation) {
         // check that animation isn't already running.
         guard !runningAnimations.contains(animation) else {
-            print("WARNING: Animation \(animation.animationId) tried to play, but is already running.")
             return
         }
         runningAnimations.append(animation)

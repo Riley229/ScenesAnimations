@@ -11,8 +11,6 @@ let package = Package(
           type: .dynamic,
           targets: ["ScenesAnimations"]),
     ],
-    dependencies: [
-    ],
     targets: [
         .target(
           name: "ScenesAnimations"),

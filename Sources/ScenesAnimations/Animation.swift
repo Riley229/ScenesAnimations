@@ -1,14 +1,31 @@
-/// Allows the animation of `Interpolatable` elements.
+/*
+ ScenesAnimations provides support for creating and running animations.
+ ScenesAnimations runs on top of Scenes and IGIS.
+ Copyright (C) 2020 Camden Thomson
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/// Defines the timings for animating an `Interpolatable` element.
 public class Animation : Equatable {
     private static var nextAnimationId : Int = 0
-    
+
+    internal var animationController : AnimationController?
     internal var state : AnimationState = .idle
+    internal var completedDelay : Bool = false
     internal var time : Double = 0
-    internal var controller : AnimationController?
 
     /// A unique identifying number for the animation.
     public let animationId : Int
-
+    
     /// The time, in seconds, the animation will take to complete one cycle.
     public private(set) var duration : Double {
         didSet {
@@ -17,20 +34,22 @@ public class Animation : Equatable {
             }
         }
     }
-    /// The amount of time, in seconds, to delay the animation from the time it begins and the beginning of the animation sequence.
+    /// The time, in seconds, to delay the animation from the time it begins and the beginning of the animation sequence.
     public private(set) var delay : Double
-    /// The playback direction of the animation.
+    /// The `EasingStyle` to apply to the animation.
+    public private(set) var ease : EasingStyle
+    /// The current elapsed time for the animation.
+    public private(set) var elapsedTime : Double = 0
+    
+    /// The playback direction for the animation.
     public var direction : Direction = .normal
     /// The repeat style for the animation.
     public var repeatStyle : RepeatStyle = .none
-    public private(set) var ease : EasingStyle
+    
     /// Describes whether or not animation is currently in reverse.
     public private(set) var isReversed : Bool = false
     /// The current number of completed animation cycles.
     public private(set) var cycle : Int = 0
-
-    /// The current elapsed time for the animation.
-    public private(set) var elapsedTime : Double = 0
 
     internal init(delay: Double, duration: Double, ease: EasingStyle) { 
         self.animationId = Animation.nextAnimationId
@@ -42,44 +61,39 @@ public class Animation : Equatable {
     }
 
     internal func registerToAnimationController(animationController: AnimationController) {
-        self.controller = animationController
+        self.animationController = animationController
     }
 
     internal func update(deltaTime: Double) {
-        guard !isPaused() else {
+        guard isPlaying || isPaused else {
             return
         }
 
+        elapsedTime += deltaTime
+        
         if state == .pending {
+            // keep time within time bounds
             time = max(0, min(delay, time + deltaTime))
-            elapsedTime += deltaTime
 
             if time >= delay {
                 state = .playing
-                if [.reverse, .alternateReverse].contains(direction) {
-                    time = duration
-                } else {
-                    time = 0
-                }
+                time = isReversed
+                  ? duration
+                  : 0
+                completedDelay = true
             }
         } else if state == .playing {
-            time += isReversed ? -deltaTime : deltaTime
-            time = max(0, min(duration, time))
-            elapsedTime += deltaTime
+            time = max(0, min(duration, time + (isReversed ? -deltaTime : deltaTime)))
 
             if !isReversed && time >= duration || isReversed && time <= 0 {
                 if repeatStyle.shouldRepeat(for: cycle) {
                     cycle += 1
-                    isReversed = direction.isReversed(isReversed: isReversed)
-                    if !isReversed {
-                        time = 0
-                    } else {
-                        time = duration
-                    }
-                } else {
-                    if state == .playing {
-                        state = .completed
-                    }
+                    isReversed = direction.shouldPlayReversed(isReversed: isReversed)
+                    time = isReversed
+                      ? duration
+                      : 0
+                } else if state == .playing {
+                    state = .completed
                 }
             } else if state == .idle && time >= duration {
                 state = .completed
@@ -87,33 +101,77 @@ public class Animation : Equatable {
         }
     }
 
-    /// Specifies if `Animation` is paused.
-    /// - Returns: True if animation is currently in a paused state.
-    public func isPaused() -> Bool {
+    internal func reset() {
+        completedDelay = false
+        time = 0
+        elapsedTime = 0
+        state = .idle
+        cycle = 0
+        isReversed = direction.shouldStartReversed()
+    }
+
+    /// Specifies if the `Animation` is currently completed.
+    public var isCompleted : Bool {
+        return state == .completed
+    }
+
+    /// Specifies if the `Animation` is currently paused.
+    public var isPaused : Bool {
         return state == .paused
     }
 
+    /// Specifies if the `Animation` is currently playing.
+    public var isPlaying : Bool {
+        return state == .pending || state == .playing
+    }
+
+    /// Plays the animation from the beginning of its sequence.
+    ///
+    /// If animation is already playing, it will restart.
     public func play() {
-        guard let controller = controller else {
+        guard let controller = animationController else {
             return
         }
-        
-        self.state = .pending
-        if [.reverse, .alternateReverse].contains(direction) {
-            isReversed = true
-        } else {
-            isReversed = false
-        }
+
+        reset()
+        state = .pending
         controller.run(animation: self)
     }
 
+    /// Stops and resets the animation.
+    public func stop() {
+        terminate()
+    }
+
+    /// Pauses the animation where it is.
     public func pause() {
+        if isPlaying {
+            state = .paused
+        }
     }
 
+    /// Resumes the animation from where it left off.
+    public func resume() {
+        if isPaused {
+            state = completedDelay
+              ? .playing
+              : .pending
+        }
+    }
+
+    /// Restarts the animation from the beginning.
     public func restart() {
+        play()
     }
 
+    /// Stops the animation.
     public func terminate() {
+        guard let animationController = animationController else {
+            return
+        }
+        
+        reset()
+        animationController.remove(animation: self)
     }
 
     /// Equivalence operator for two `Animation`s.

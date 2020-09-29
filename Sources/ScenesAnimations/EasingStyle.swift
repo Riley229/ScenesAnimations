@@ -1,10 +1,27 @@
-import Foundation
-import Igis
+/*
+ ScenesAnimations provides support for creating and running animations.
+ ScenesAnimations runs on top of Scenes and IGIS.
+ Copyright (C) 2020 Camden Thomson
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // References:
 // - https://easings.net/
 // - https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function
 
-/// Used to specify the rate of change of a parameter over time.
+import Foundation
+import Igis
+
+/// Used to specify the rate of change for a parameter over time (the acceleration and decceleration).
 public enum EasingStyle {
     /// Moves at a constant speed in a straight linear line.
     case linear
@@ -13,9 +30,9 @@ public enum EasingStyle {
     /// - Parameter count: The number of steps to take.
     case steps(count: Int)
 
-    /// Passes progress value through provided function to calculate interpolant.
-    /// - Parameter interpolant: A function returning the interpolant value for a given progress value.
-    case custom(interpolant: (Double) -> Double)
+    /// Passes progress value through provided function to calculate altered progress value.
+    /// - Parameter progress: A function returning the altered progress value for a given progress value.
+    case custom(progress: (Double) -> Double)
 
     /// Defines and uses a cubic bezier curve for the acceleration and decceleration.
     /// - Parameters:
@@ -76,7 +93,7 @@ public enum EasingStyle {
     public static var outQuint = EasingStyle.outPow(exponent: 5)
     public static var inOutQuint = EasingStyle.inOutPow(exponent: 5)
 
-    /// Applies the progress value to `EasingStyle` and generates an interpolant value.
+    /// Applies the progress value to `EasingStyle` and generates an altered value.
     /// - Parameter progress: The progress value to apply.
     /// - Returns: An interpolant represented by the specified `EasingStyle`.
     public func apply(progress: Double) -> Double {
@@ -105,12 +122,11 @@ public enum EasingStyle {
         case .inPow(let exponent):
             return pow(progress, exponent)
         case .outPow(let exponent):
-            return 1 - pow(1 - progress, exponent)
+            return 1 - EasingStyle.inPow(exponent: exponent).apply(progress: 1 - progress)
         case .inOutPow(let exponent):
-            progress *= 2
-            return progress < 1
-              ? pow(progress * 2, exponent) / 2
-              : 1 - pow(2 - progress * 2, exponent) / 2
+            return progress < 0.5
+              ? EasingStyle.inPow(exponent: exponent).apply(progress: progress * 2) / 2
+              : EasingStyle.inPow(exponent: exponent).apply(progress: (1 - progress) * 2) / 2
 
         case .inSine:
             return 1 - cos(progress * Double.pi / 2)
@@ -168,37 +184,14 @@ public enum EasingStyle {
               : EasingStyle.outBounce.apply(progress: progress - 1) / 2 + 0.5
  
         case .inElastic:
-            return -pow(2, 10 * progress - 10) * sin((progress * 10 - 10.75) * ((2 * Double.pi) / 3))
+            return -pow(2, 10 * progress - 10) * sin((progress * 10 - 10.75) * (2 * Double.pi / 3))
         case .outElastic:
-            return pow(2, -10 * progress) * sin((progress * 10 - 0.75) * ((2 * Double.pi) / 3)) + 1
+            return pow(2, -10 * progress) * sin((progress * 10 - 0.75) * (2 * Double.pi / 3)) + 1
         case .inOutElastic:
             progress *= 2
             return progress < 1
-              ? -(pow(2, 10 * progress - 10) * sin((10 * progress - 11.125) * ((Double.pi * 2) / 4.5))) / 2
-              : (pow(2, -10 * progress + 10) * sin((10 * progress - 11.125) * ((Double.pi * 2) / 4.5))) / 2 + 1
+              ? -(pow(2, 10 * progress - 10) * sin((10 * progress - 11.125) * (Double.pi * 2 / 4.5))) / 2
+              : (pow(2, -10 * progress + 10) * sin((10 * progress - 11.125) * (Double.pi * 2 / 4.5))) / 2 + 1
         }
     }
-
-    // ******** MARK: deprecated properties. ********
-    @available(*, deprecated, renamed: "inPow")
-    public static func configureInPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.inPow(exponent: exponent)
-    }
-
-    @available(*, deprecated, renamed: "outPow")
-    public static func configureOutPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.outPow(exponent: exponent)
-    }
-    
-    @available(*, deprecated, renamed: "inOutPow")
-    public static func configureInOutPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.inOutPow(exponent: exponent)
-    }
-
-    @available(*, deprecated, renamed: "inExpo")
-    public static let inExponential = EasingStyle.inExpo
-    @available(*, deprecated, renamed: "outExpo")
-    public static let outExponential = EasingStyle.outExpo
-    @available(*, deprecated, renamed: "inOutExpo")
-    public static let inOutExponential = EasingStyle.inOutExpo
 }
