@@ -126,7 +126,7 @@ public enum EasingStyle {
         case .inOutPow(let exponent):
             return progress < 0.5
               ? EasingStyle.inPow(exponent: exponent).apply(progress: progress * 2) / 2
-              : EasingStyle.inPow(exponent: exponent).apply(progress: (1 - progress) * 2) / 2
+              : 1 - EasingStyle.inPow(exponent: exponent).apply(progress: (1 - progress) * 2) / 2
 
         case .inSine:
             return 1 - cos(progress * Double.pi / 2)

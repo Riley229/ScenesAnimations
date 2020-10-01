@@ -80,6 +80,22 @@ extension Animation {
     public var isQueued : Bool {
         return false
     }
+
+    @available(swift, obsoleted: 5.2, message: "Use the repeatStyle attribute of `Animation` instead.")
+    public var loop : Bool {
+        get {
+            return false
+        }
+        set {}
+    }
+
+    @available(swift, obsoleted: 5.2, message: "Use the direction attribute of `Animation` instead.")
+    public var reverse : Bool {
+        get {
+            return false
+        }
+        set {}
+    }
 }
 
 // ********************************************************************************

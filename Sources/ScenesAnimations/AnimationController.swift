@@ -131,6 +131,13 @@ public class AnimationController : EventHandler, FrameUpdateHandler {
         }
     }
 
+    /// Invokes resume() on all running `Animation`s.
+    public func resumeAll() {
+        for animation in runningAnimations {
+            animation.resume()
+        }
+    }
+
     /// Invokes play() on all running `Animation`s.
     public func playAll() {
         for animation in runningAnimations {
