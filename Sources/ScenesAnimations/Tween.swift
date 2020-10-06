@@ -59,11 +59,9 @@ public class Tween<TweenElement: Interpolatable> : Animation {
         self.init(from: from, to: to, delay: delay, duration: interval / speed, ease: ease, update: update)
     }
 
-    override func update(deltaTime: Double) {
-        super.update(deltaTime: deltaTime)
-
+    override func seek(progress: Double) {
         if state == .playing {
-            let newValue = startValue.lerp(to: endValue, progress: ease.apply(progress: time / duration))
+            let newValue = startValue.lerp(to: endValue, progress: ease.apply(progress: progress))
             updateHandler(newValue)
         }
     }

@@ -41,6 +41,7 @@ Initial Release.
 - Add repeatDelay to Animation.
 - Add support for animating along a path.
 - Add simplified declarative syntax for animating properties.
-- Add support for fractional repeatStyle counts and function checkers.
 - Add Animation Timelines.
 - Add Animation event handlers?
+- Add prefabricated animations
+- Add animation fill mode (CSS Animations)

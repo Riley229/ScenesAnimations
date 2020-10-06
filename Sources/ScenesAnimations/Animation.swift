@@ -14,18 +14,15 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/// Defines the timings for animating an `Interpolatable` element.
-public class Animation : Equatable {
-    private static var nextAnimationId : Int = 0
+import Scenes
 
+/// Defines the timings for animating an `Interpolatable` element.
+public class Animation : IdentifiableObject {
     internal var animationController : AnimationController?
     internal var state : AnimationState = .idle
     internal var completedDelay : Bool = false
     internal var time : Double = 0
 
-    /// A unique identifying number for the animation.
-    public let animationId : Int
-    
     /// The time, in seconds, the animation will take to complete one cycle.
     public private(set) var duration : Double {
         didSet {
@@ -44,7 +41,7 @@ public class Animation : Equatable {
     /// The playback direction for the animation.
     public var direction : Direction = .normal
     /// The repeat style for the animation.
-    public var repeatStyle : RepeatStyle = .none
+    public var repeatStyle : RepeatStyle = .count(1)
     
     /// Describes whether or not animation is currently in reverse.
     public private(set) var isReversed : Bool = false
@@ -52,19 +49,18 @@ public class Animation : Equatable {
     public private(set) var cycle : Int = 0
 
     internal init(delay: Double, duration: Double, ease: EasingStyle) { 
-        self.animationId = Animation.nextAnimationId
-        Animation.nextAnimationId += 1
-
         self.delay = delay
         self.duration = duration
         self.ease = ease
+
+        super.init(name: "Animation")
     }
 
     internal func registerToAnimationController(animationController: AnimationController) {
         self.animationController = animationController
     }
 
-    internal func update(deltaTime: Double) {
+    public func update(deltaTime: Double) {
         guard isPlaying || isPaused else {
             return
         }
@@ -83,22 +79,30 @@ public class Animation : Equatable {
                 completedDelay = true
             }
         } else if state == .playing {
+            let progress = (isReversed ? duration - time : time) / duration
+            seek(progress: time / duration)
+            
+            guard repeatStyle.shouldContinue(count: Double(cycle) + progress) else {
+                state = .completed
+                return
+            }
+            
             time = max(0, min(duration, time + (isReversed ? -deltaTime : deltaTime)))
 
             if !isReversed && time >= duration || isReversed && time <= 0 {
-                if repeatStyle.shouldRepeat(for: cycle) {
-                    cycle += 1
-                    isReversed = direction.shouldPlayReversed(isReversed: isReversed)
-                    time = isReversed
-                      ? duration
-                      : 0
-                } else if state == .playing {
-                    state = .completed
-                }
+                cycle += 1
+                isReversed = (direction.alternates ? !isReversed : isReversed)
+                time = isReversed
+                  ? duration
+                  : 0
             } else if state == .idle && time >= duration {
                 state = .completed
             }
         }
+    }
+
+    internal func seek(progress: Double) {
+        fatalError("seek method invoked on Animation.")
     }
 
     internal func reset() {
@@ -107,7 +111,7 @@ public class Animation : Equatable {
         elapsedTime = 0
         state = .idle
         cycle = 0
-        isReversed = direction.shouldStartReversed()
+        isReversed = direction.startInReverse
     }
 
     /// Specifies if the `Animation` is currently completed.
@@ -127,9 +131,10 @@ public class Animation : Equatable {
 
     /// Plays the animation from the beginning of its sequence.
     ///
-    /// If animation is already playing, it will restart.
+    /// If animation is already playing, it won't affect it.
     public func play() {
-        guard let controller = animationController else {
+        guard let controller = animationController,
+              !isPlaying else {
             return
         }
 
@@ -161,6 +166,7 @@ public class Animation : Equatable {
 
     /// Restarts the animation from the beginning.
     public func restart() {
+        reset()
         play()
     }
 
@@ -172,10 +178,5 @@ public class Animation : Equatable {
         
         reset()
         animationController.remove(animation: self)
-    }
-
-    /// Equivalence operator for two `Animation`s.
-    public static func == (left: Animation, right: Animation) -> Bool {
-        return left.animationId == right.animationId
     }
 }

@@ -16,22 +16,27 @@
 
 /// Used to define how many iterations an `Animation` cycles through before completion.
 public enum RepeatStyle {
-    /// Plays through one cycle and then completes (no repeats).
-    case none
     /// Repeats forever until `Animation` is explicitly stopped or cancelled.
     case forever
     /// Repeats specified number of cycles and completes.
-    case count(Int)
+    case count(Double)
+    /// Repeats until the specified closure returns true.
+    case until(() -> Bool)
 
-    // tells animation whether or not it should repeat for the given cycle count
-    internal func shouldRepeat(for cycle: Int) -> Bool {
+    /// Repeats specified number of cycles and completes.
+    public static func count(_ count: Int) -> RepeatStyle {
+        return .count(Double(count))
+    }
+
+    // tells animation whether or not it should keep going for the given progress.
+    internal func shouldContinue(count: Double) -> Bool {
         switch self {
-        case .none:
-            return false
         case .forever:
             return true
-        case .count(let count):
-            return count > 0 && cycle < count
+        case .count(let checkingCount):
+            return checkingCount > count
+        case .until(let stop):
+            return !stop()
         }
     }
 }

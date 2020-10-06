@@ -19,6 +19,7 @@
 import Foundation
 import Igis
 
+// used to calculate the bezier `EasingStyle`.
 internal struct UnitBezier {
     var pointA : DoublePoint
     var pointB : DoublePoint

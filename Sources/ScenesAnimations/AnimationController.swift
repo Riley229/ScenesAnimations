@@ -18,11 +18,13 @@ import Foundation
 import Scenes
 
 /// Responsible for updating all running `Animation`s.
-public class AnimationController : EventHandler, FrameUpdateHandler {
+public class AnimationController : IdentifiableObject, FrameUpdateHandler {
     private var runningAnimations : [Animation]
     private var currentTime : Date
     private var isRunning : Bool
     private static var activeControllers : [String:AnimationController] = [:]
+
+    public var animationUpdateMode : AnimationUpdateMode
 
     // ********************************************************************************
     // Functions for internal use
@@ -32,6 +34,8 @@ public class AnimationController : EventHandler, FrameUpdateHandler {
         runningAnimations = [Animation]()
         currentTime = Date()
         isRunning = false
+
+        animationUpdateMode = .unscaledTime
 
         super.init(name: "AnimationController")
     }
@@ -69,7 +73,7 @@ public class AnimationController : EventHandler, FrameUpdateHandler {
     }
 
     // Finds the animationController assigned to the specified director.
-    internal static func findAnimationController(forDirector director: Director) -> AnimationController {
+    internal static func getAnimationController(forDirector director: Director) -> AnimationController {
         if let animationController = activeControllers[director.name] {
             return animationController
         } else {
@@ -83,9 +87,15 @@ public class AnimationController : EventHandler, FrameUpdateHandler {
     public func onFrameUpdate(framesPerSecond: Int) {
         if isRunning {
             // calculate time since last frame update.
-            let newTime = Date()
-            let frameTime = newTime.timeIntervalSince(currentTime)
-            currentTime = newTime
+            var frameTime = 0.0
+            if animationUpdateMode == .unscaledTime {
+                let newTime = Date()
+                frameTime = newTime.timeIntervalSince(currentTime)
+                currentTime = newTime
+            } else  if animationUpdateMode == .scaledTime {
+                frameTime = 1.0 / Double(framesPerSecond)
+                currentTime += frameTime
+            }
             
             for animation in runningAnimations {
                 animation.update(deltaTime: frameTime)

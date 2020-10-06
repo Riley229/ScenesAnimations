@@ -21,7 +21,7 @@
 import Foundation
 import Igis
 
-/// Used to specify the rate of change for a parameter over time (the acceleration and decceleration).
+/// Used to specify the rate of change for a parameter over time (its acceleration and decceleration).
 public enum EasingStyle {
     /// Moves at a constant speed in a straight linear line.
     case linear
@@ -30,8 +30,8 @@ public enum EasingStyle {
     /// - Parameter count: The number of steps to take.
     case steps(count: Int)
 
-    /// Passes progress value through provided function to calculate altered progress value.
-    /// - Parameter progress: A function returning the altered progress value for a given progress value.
+    /// Passes progress value through provided function to calculate a new progress value.
+    /// - Parameter progress: A function returning the new progress value for a given progress value.
     case custom(progress: (Double) -> Double)
 
     /// Defines and uses a cubic bezier curve for the acceleration and decceleration.
@@ -124,9 +124,10 @@ public enum EasingStyle {
         case .outPow(let exponent):
             return 1 - EasingStyle.inPow(exponent: exponent).apply(progress: 1 - progress)
         case .inOutPow(let exponent):
-            return progress < 0.5
-              ? EasingStyle.inPow(exponent: exponent).apply(progress: progress * 2) / 2
-              : 1 - EasingStyle.inPow(exponent: exponent).apply(progress: (1 - progress) * 2) / 2
+            progress *= 2
+            return progress < 1
+              ? EasingStyle.inPow(exponent: exponent).apply(progress: progress) / 2
+              : 1 - EasingStyle.inPow(exponent: exponent).apply(progress: 2 - progress) / 2
 
         case .inSine:
             return 1 - cos(progress * Double.pi / 2)

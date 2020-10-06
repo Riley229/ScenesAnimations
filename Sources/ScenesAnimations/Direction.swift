@@ -26,7 +26,7 @@ public enum Direction {
     case alternateReverse
 
     // tells animation whether or not it should start in reverse.
-    internal func shouldStartReversed() -> Bool {
+    internal var startInReverse : Bool {
         switch self {
         case .normal, .alternate:
             return false
@@ -35,15 +35,13 @@ public enum Direction {
         }
     }
     
-    // tells animation whether or not it should play the next cycle in reverse.
-    internal func shouldPlayReversed(isReversed: Bool) -> Bool {
+    // tells animation whether or not it should alternate every cycle.
+    internal var alternates : Bool {
         switch self {
-        case .normal:
+        case .normal, .reverse:
             return false
-        case .reverse:
-            return true
         case .alternate, .alternateReverse:
-            return !isReversed
+            return true
         }
     }
 }

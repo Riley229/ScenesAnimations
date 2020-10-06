@@ -19,7 +19,7 @@ import Scenes
 extension Director {
     /// The `AnimationController` associated with this director.
     public var animationController : AnimationController {
-        return AnimationController.findAnimationController(forDirector: self)
+        return AnimationController.getAnimationController(forDirector: self)
     }
 }
 

@@ -131,15 +131,15 @@ extension EasingStyle {
 
     @available(swift, obsoleted: 5.2, renamed: "inPow")
     public static func configureInPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.inPow(exponent: exponent)
+        return .linear
     }
     @available(swift, obsoleted: 5.2, renamed: "outPow")
     public static func configureOutPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.outPow(exponent: exponent)
+        return .linear
     }
     @available(swift, obsoleted: 5.2, renamed: "inOutPow")
     public static func configureInOutPow(exponent: Double) -> EasingStyle {
-        return EasingStyle.inOutPow(exponent: exponent)
+        return .linear
     }
 
     @available(swift, obsoleted: 5.2, renamed: "inExpo")
