@@ -80,15 +80,15 @@ public class Animation : IdentifiableObject {
             }
         } else if state == .playing {
             let progress = (isReversed ? duration - time : time) / duration
-            seek(progress: time / duration)
-            
             guard repeatStyle.shouldContinue(count: Double(cycle) + progress) else {
+                terminate()
                 state = .completed
                 return
             }
-            
-            time = max(0, min(duration, time + (isReversed ? -deltaTime : deltaTime)))
 
+            seek(progress: time / duration)
+
+            time = max(0, min(duration, time + (isReversed ? -deltaTime : deltaTime)))
             if !isReversed && time >= duration || isReversed && time <= 0 {
                 cycle += 1
                 isReversed = (direction.alternates ? !isReversed : isReversed)
@@ -96,6 +96,7 @@ public class Animation : IdentifiableObject {
                   ? duration
                   : 0
             } else if state == .idle && time >= duration {
+                terminate()
                 state = .completed
             }
         }
@@ -175,7 +176,7 @@ public class Animation : IdentifiableObject {
         guard let animationController = animationController else {
             return
         }
-        
+
         reset()
         animationController.remove(animation: self)
     }
