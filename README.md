@@ -31,7 +31,6 @@ Coming Soon!
 - Add Documentation to README.
 - Add Interpolatable support for characters and strings.
 - Make Color HSB Interpolatable.
-- Add repeatDelay to Animation.
 - Add support for animating along a path.
 - Add simplified declarative syntax for animating properties.
 - Add Animation Timelines.

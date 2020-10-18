@@ -24,7 +24,7 @@ public class Animation : IdentifiableObject {
     internal var time : Double = 0
 
     /// The time, in seconds, the animation will take to complete one cycle.
-    public private(set) var duration : Double {
+    public internal(set) var duration : Double {
         didSet {
             if duration <= 0 {
                 duration = 0.001
@@ -32,7 +32,8 @@ public class Animation : IdentifiableObject {
         }
     }
     /// The time, in seconds, to delay the animation from the time it begins and the beginning of the animation sequence.
-    public private(set) var delay : Double
+    public internal(set) var delay : Double
+    
     /// The `EasingStyle` to apply to the animation.
     public private(set) var ease : EasingStyle
     /// The current elapsed time for the animation.
@@ -40,6 +41,14 @@ public class Animation : IdentifiableObject {
     
     /// The playback direction for the animation.
     public var direction : Direction = .normal
+    /// The time, in seconds, to delay the animation between cycles.
+    public var repeatDelay : Double = 0 {
+        didSet {
+            if repeatDelay < 0 {
+                repeatDelay = 0
+            }
+        }
+    }
     /// The repeat style for the animation.
     public var repeatStyle : RepeatStyle = .count(1)
     
@@ -68,10 +77,11 @@ public class Animation : IdentifiableObject {
         elapsedTime += deltaTime
         
         if state == .pending {
+            let currentDelay = (cycle == 0) ? delay : repeatDelay
             // keep time within time bounds
-            time = max(0, min(delay, time + deltaTime))
+            time = max(0, min(currentDelay, time + deltaTime))
 
-            if time >= delay {
+            if time >= currentDelay {
                 state = .playing
                 time = isReversed
                   ? duration
@@ -92,9 +102,15 @@ public class Animation : IdentifiableObject {
             if !isReversed && time >= duration || isReversed && time <= 0 {
                 cycle += 1
                 isReversed = (direction.alternates ? !isReversed : isReversed)
-                time = isReversed
-                  ? duration
-                  : 0
+                if repeatDelay != 0 {
+                    state = .pending
+                    time = 0
+                    completedDelay = false
+                } else {
+                    time = isReversed
+                      ? duration
+                      : 0
+                }
             } else if state == .idle && time >= duration {
                 terminate()
                 state = .completed

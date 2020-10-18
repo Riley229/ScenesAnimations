@@ -60,9 +60,6 @@ public class Tween<TweenElement: Interpolatable> : Animation {
     }
 
     override func seek(progress: Double) {
-        if type(of:endValue) == type(of:0.0) {
-            print(time)
-        }
         if state == .playing {
             let newValue = startValue.lerp(to: endValue, progress: ease.apply(progress: progress))
             updateHandler(newValue)
