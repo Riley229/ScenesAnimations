@@ -5,7 +5,6 @@ ScenesAnimations is a library built on top of Igis and Scenes with added support
 ## Table of Content
 - [Setup](#setup)
 - [Documentation](#documentation)
-- [Changelog](#changelog)
 - [Project Roadmap](#project-roadmap)
 
 ## Setup
@@ -13,7 +12,7 @@ ScenesAnimations is a library built on top of Igis and Scenes with added support
 To use the ScenesAnimations library in your existing Scenes project, add the following line to your `dylib.manifest` file:
 
 ```shell
-ScenesAnimations          0.1.0
+ScenesAnimations          <version>
 ```
 
 Then, run the following commands on the command line:
@@ -28,20 +27,13 @@ build
 
 Coming Soon!
 
-## Changelog
-
-### Pre-Release 0.1.0
-
-Initial Release.
-
 ## Project Roadmap
 - Add Documentation to README.
 - Add Interpolatable support for characters and strings.
 - Make Color HSB Interpolatable.
-- Add repeatDelay to Animation.
 - Add support for animating along a path.
 - Add simplified declarative syntax for animating properties.
 - Add Animation Timelines.
 - Add Animation event handlers?
 - Add prefabricated animations
-- Add animation fill mode (CSS Animations)
+- Add animation fill mode (refer to CSS Animations)
