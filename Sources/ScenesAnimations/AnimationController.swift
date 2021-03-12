@@ -92,7 +92,7 @@ public class AnimationController : IdentifiableObject, FrameUpdateHandler {
                 let newTime = Date()
                 frameTime = newTime.timeIntervalSince(currentTime)
                 currentTime = newTime
-            } else  if animationUpdateMode == .scaledTime {
+            } else if animationUpdateMode == .scaledTime {
                 frameTime = 1.0 / Double(framesPerSecond)
                 currentTime += frameTime
             }
@@ -110,14 +110,14 @@ public class AnimationController : IdentifiableObject, FrameUpdateHandler {
     /// Registers an `Animation` to the AnimationController so it can recieve updates.
     /// - Parameter animation: The `Animation` to register.
     public func register(animation: Animation) {
-        animation.registerToAnimationController(animationController: self)
+        animation.registerToAnimationController(controller: self)
     }
 
     /// Registers an array of `Animation`s to the AnimationController so they can recieve updates.
     /// - Parameter animations: The `Animation`s to register.
     public func register(animations: [Animation]) {
         for animation in animations {
-            animation.registerToAnimationController(animationController: self)
+            animation.registerToAnimationController(controller: self)
         }
     }
 
@@ -125,6 +125,26 @@ public class AnimationController : IdentifiableObject, FrameUpdateHandler {
     /// - Parameter animations: The `Animation`s to register.
     public func register(animations: Animation...) {
         register(animations: animations)
+    }
+
+    /// Unregisters an `Animation` from the AnimationController.
+    /// - Parameter animation: The `Animation` to unregister.
+    public func unregister(animation: Animation) {
+        animation.unregisterToAnimationController(controller: self)
+    }
+
+    /// Unregisters an array of `Animation`s to the AnimationController.
+    /// - Parameter animations: The `Animation`s to unregister.
+    public func unregister(animations: [Animation]) {
+        for animation in animations {
+            animation.unregisterToAnimationController(controller: self)
+        }
+    }
+    
+    /// Unregisters a list of `Animation`s to the AnimationController.
+    /// - Parameter animations: The `Animation`s to unregister.
+    public func unregister(animations: Animation...) {
+        unregister(animations: animations)
     }
 
     /// Invokes terminate() on all running `Animation`s.

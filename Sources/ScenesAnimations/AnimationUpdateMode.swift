@@ -19,6 +19,6 @@ public enum AnimationUpdateMode {
     case scaledTime
     /// Calculates the precise deltaTime since the previous frame.
     ///
-    /// This is the recommended update mode as it is more responsive.
+    /// This is the recommended update mode as it is more adaptable.
     case unscaledTime
 }

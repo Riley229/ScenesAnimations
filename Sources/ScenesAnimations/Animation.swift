@@ -57,6 +57,12 @@ public class Animation : IdentifiableObject {
     /// The current number of completed animation cycles.
     public private(set) var cycle : Int = 0
 
+    // Type of handler for animation completion
+    public typealias CompletionHandler = (_ animation:Animation) -> Void
+
+    /// Stores the handler to be used when animation completes
+    public var completionHandler : CompletionHandler?
+
     internal init(delay: Double, duration: Double, ease: EasingStyle) { 
         self.delay = delay
         self.duration = duration
@@ -65,8 +71,18 @@ public class Animation : IdentifiableObject {
         super.init(name: "Animation")
     }
 
-    internal func registerToAnimationController(animationController: AnimationController) {
-        self.animationController = animationController
+    internal func registerToAnimationController(controller: AnimationController) {
+        guard animationController != controller else {
+            fatalError("Unable to register specified animation '\(name)' because it is already registered.")
+        }
+        animationController = controller
+    }
+
+    internal func unregisterToAnimationController(controller: AnimationController) {
+        guard animationController == controller else {
+            fatalError("Unable to unregister specified animation '\(name)' because it isn't registered to an AnimationController.")
+        }
+        animationController = nil
     }
 
     public func update(deltaTime: Double) {
@@ -91,8 +107,7 @@ public class Animation : IdentifiableObject {
         } else if state == .playing {
             let progress = (isReversed ? duration - time : time) / duration
             guard repeatStyle.shouldContinue(count: Double(cycle) + progress) else {
-                terminate()
-                state = .completed
+                complete()
                 return
             }
 
@@ -112,14 +127,22 @@ public class Animation : IdentifiableObject {
                       : 0
                 }
             } else if state == .idle && time >= duration {
-                terminate()
-                state = .completed
+                complete()
             }
         }
     }
 
     internal func seek(progress: Double) {
         fatalError("seek method invoked on Animation.")
+    }
+
+    internal func complete() {
+        terminate()
+        state = .completed
+        
+        if let completionHandler = completionHandler {
+            completionHandler(self)
+        }
     }
 
     internal func reset() {
@@ -150,14 +173,12 @@ public class Animation : IdentifiableObject {
     ///
     /// If animation is already playing, it won't affect it.
     public func play() {
-        guard let controller = animationController,
-              !isPlaying else {
-            return
+        if let animationController = animationController,
+           !isPlaying {
+            reset()
+            state = .pending
+            animationController.run(animation: self)
         }
-
-        reset()
-        state = .pending
-        controller.run(animation: self)
     }
 
     /// Stops and resets the animation.
@@ -189,11 +210,9 @@ public class Animation : IdentifiableObject {
 
     /// Stops the animation.
     public func terminate() {
-        guard let animationController = animationController else {
-            return
+        if let animationController = animationController {
+            reset()
+            animationController.remove(animation: self)
         }
-
-        reset()
-        animationController.remove(animation: self)
     }
 }

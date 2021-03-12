@@ -110,22 +110,12 @@ extension Alpha : Interpolatable {
 
 extension Color : Interpolatable {
     public func vectorize() -> [Double] {
-        return red.vectorize() + green.vectorize() + blue.vectorize()
+        return hue.vectorize() + saturation.vectorize() + brightness.vectorize()
     }
 
     public static func normalize(from vectors: [Double]) -> Color {
-        return Color(red: forceUInt8(value: Double.normalize(from: [vectors[0]])),
-                     green: forceUInt8(value: Double.normalize(from: [vectors[1]])),
-                     blue: forceUInt8(value: Double.normalize(from: [vectors[2]])))
-    }
-
-    private static func forceUInt8(value: Double) -> UInt8 {
-        if value < Double(UInt8.min) {
-            return UInt8.min
-        } else if value > Double(UInt8.max) {
-            return UInt8.max
-        } else {
-            return UInt8(value)
-        }
+        return Color(hue: Double.normalize(from: [vectors[0]]),
+                     saturation: Double.normalize(from: [vectors[1]]),
+                     brightness: Double.normalize(from: [vectors[2]]))
     }
 }
