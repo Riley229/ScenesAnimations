@@ -1,7 +1,7 @@
 /*
  ScenesAnimations provides support for creating and running animations.
  ScenesAnimations runs on top of Scenes and IGIS.
- Copyright (C) 2020 Camden Thomson
+ Copyright (C) 2020,2021 Camden Thomson
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
